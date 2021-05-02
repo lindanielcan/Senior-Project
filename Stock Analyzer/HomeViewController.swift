@@ -105,7 +105,7 @@ class HomeViewController: UIViewController {
         let startP  = dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(self.startP)))
         let endP = dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(self.endP)))
         
-        
+        print(startP, endP)
         fetchMACD(stock: self.stockTicker!, fromP: startP, toP: endP, interval: wrapTime, completionHandler: { (data, response, error) -> Void in
             if (error != nil || data == nil) {
                 showConfirmAlert(root: self, msg: "Error access yahoo finance api.")
@@ -124,7 +124,7 @@ class HomeViewController: UIViewController {
                     
                     let d = json["values"] as! [[String: String]]
                     
-                    for i in (0..<d.count) {
+                    for i in (0..<d.count).reversed() {
                         let v = d[i]
                         let time = v["datetime"]
                         let macd = Double(v["macd"]!) // blue line
@@ -132,10 +132,10 @@ class HomeViewController: UIViewController {
                         let macd_hist = Double(v["macd_hist"]!) // grey hist
                         
                         
-                        xVals.append(String(time!.suffix(from: time!.firstIndex(of: "-")!)))
-                        macdVals.append(ChartDataEntry(x: Double(i), y: macd!))
-                        macdSiVals.append(ChartDataEntry(x: Double(i), y: macd_signal!))
-                        histVals.append(BarChartDataEntry(x: Double(i), y: macd_hist!))
+                        xVals.append(String(time!.suffix(from: time!.index(time!.firstIndex(of: "-")!, offsetBy: 1))))
+                        macdVals.append(ChartDataEntry(x: Double(d.count - i - 1), y: macd!))
+                        macdSiVals.append(ChartDataEntry(x: Double(d.count - i - 1), y: macd_signal!))
+                        histVals.append(BarChartDataEntry(x: Double(d.count - i - 1), y: macd_hist!))
                     }
                     
                     DispatchQueue.main.async {
@@ -165,10 +165,11 @@ class HomeViewController: UIViewController {
                         x.drawGridLinesEnabled = false;
                         x.setLabelCount(5, force: false)
                         chart.borderLineWidth = 0.5
-                        print(xVals)
                         
                         if xVals.count > 0 {
-                            chart.setVisibleXRangeMaximum(7)
+                            chart.setVisibleXRangeMaximum(14)
+                            chart.autoScaleMinMaxEnabled = true
+                            
                             chart.moveViewToX(Double(xVals.count - 1))
                         } else {
                             chart.xAxis.axisMinimum = 0
@@ -287,10 +288,11 @@ class HomeViewController: UIViewController {
                             x.drawGridLinesEnabled = false;
                             x.setLabelCount(5, force: false)
                             chartView.borderLineWidth = 0.5
+                            chartView.autoScaleMinMaxEnabled = true
                             chartView.data = CandleChartData(dataSet: set1)
                             if xAxis.count > 0 {
-                                
-                                chartView.setVisibleXRange(minXRange: 10, maxXRange: 15)
+                                chartView.autoScaleMinMaxEnabled = true
+                                chartView.setVisibleXRange(minXRange: 14, maxXRange: 14)
                                 chartView.moveViewToX(Double(xAxis.count - 1))
                             } else {
                             }
@@ -311,9 +313,10 @@ class HomeViewController: UIViewController {
                             let x = chartView.xAxis
                             x.labelPosition = XAxis.LabelPosition.bottom
                             x.valueFormatter = IndexAxisValueFormatter(values: xAxis)
-                        
+                            
                             if xAxis.count > 0 {
-                                chartView.setVisibleXRangeMaximum(7)
+                                chartView.setVisibleXRangeMaximum(14)
+                                chartView.autoScaleMinMaxEnabled=true
                                 chartView.moveViewToX(Double(xAxis.count - 1))
                             } else {
                             }
@@ -387,7 +390,7 @@ class HomeViewController: UIViewController {
                     var xAxis = [String]()
                     let dateFormatter = DateFormatter()
                     dateFormatter.timeZone = NSTimeZone.local
-                    dateFormatter.dateFormat = "YYYY/MM/dd"
+                    dateFormatter.dateFormat = "MM/dd"
                     
                     var lowLine = [ChartDataEntry]()
                     var highLine = [ChartDataEntry]()
@@ -447,7 +450,9 @@ class HomeViewController: UIViewController {
                         x.valueFormatter = IndexAxisValueFormatter(values: xAxis)
                         
                         if xAxis.count > 0 {
-                            chartView.setVisibleXRangeMaximum(7)
+                            chartView.setVisibleXRangeMaximum(14)
+                            chartView.autoScaleMinMaxEnabled = true
+                            chartView.setScaleEnabled(true)
                             chartView.moveViewToX(Double(xAxis.count - 1))
                         } else {
                             chartView.xAxis.axisMinimum = 0
@@ -495,7 +500,7 @@ class HomeViewController: UIViewController {
                     var xAxis = [String]()
                     let dateFormatter = DateFormatter()
                     dateFormatter.timeZone = NSTimeZone.local
-                    dateFormatter.dateFormat = "YYYY/MM/dd"
+                    dateFormatter.dateFormat = "MM/dd"
                     
                     var yAxis = [CandleChartDataEntry]()
                     var counter = 0;
@@ -533,11 +538,13 @@ class HomeViewController: UIViewController {
                         x.labelPosition = XAxis.LabelPosition.bottom
                         x.valueFormatter = IndexAxisValueFormatter(values: xAxis)
                         x.drawGridLinesEnabled = false;
-                        x.setLabelCount(7, force: false)
+                        chartView.autoScaleMinMaxEnabled = true
                         chartView.borderLineWidth = 0.5
                         chartView.data = CandleChartData(dataSet: set1)
+                        
                         if xAxis.count > 0 {
-                            chartView.setVisibleXRangeMaximum(7)
+                            chartView.setVisibleXRangeMaximum(14)
+                            chartView.autoScaleMinMaxEnabled = true
                             chartView.moveViewToX(Double(xAxis.count - 1))
                         } else {
                             chartView.xAxis.axisMinimum = 0
